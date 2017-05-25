@@ -160,8 +160,9 @@ class GBMSummaryLightCurve(LightCurve):
             gbm_times.append(fermi.met_to_utc(t))
         column_labels=['4-15 keV','15-25 keV','25-50 keV','50-100 keV','100-300 keV',
                        '300-800 keV','800-2000 keV']
-        return header, pandas.DataFrame(summary_counts, columns=column_labels, index=gbm_times)
-
+	data_values = pandas.DataFrame(summary_counts, columns=column_labels, index=gbm_times)
+	data_values.sort(inplace = True)
+        return header, data_values
 
 def _bin_data_for_summary(energy_bins,count_data):
     """Missing doc string"""
