@@ -62,7 +62,7 @@ class RHESSISummaryTimeSeries(GenericTimeSeries):
     _source = 'rhessi'
 
     @peek_show
-    def peek(self, title="RHESSI Observing Summary Count Rate"):
+    def peek(self, title="RHESSI Observing Summary Count Rate", **plot_args):
         """
         Plots RHESSI Count Rate light curve. An example is shown below:
 
@@ -77,6 +77,9 @@ class RHESSISummaryTimeSeries(GenericTimeSeries):
         ----------
         title : `str`
             The title of the plot.
+        **plot_args : `dict`
+            Additional plot keyword arguments that are handed to
+            :meth:`pandas.DataFrame.plot`.
         """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()
@@ -86,8 +89,7 @@ class RHESSISummaryTimeSeries(GenericTimeSeries):
 
         lc_linecolors = rhessi.hsi_linecolors()
 
-        for lc_color, (item, frame) in zip(lc_linecolors, self.data.items()):
-            axes.plot_date(self.data.index, frame.values, '-', label=item, lw=2, color=lc_color)
+        self.data.plot(ax=axes, colors=lc_linecolors, **plot_args)
 
         axes.set_yscale("log")
         axes.set_xlabel(datetime.datetime.isoformat(self.data.index[0])[0:10])
@@ -99,11 +101,7 @@ class RHESSISummaryTimeSeries(GenericTimeSeries):
         axes.xaxis.grid(False, 'major')
         axes.legend()
 
-        # TODO: display better tick labels for date range (e.g. 06/01 - 06/05)
-        formatter = matplotlib.dates.DateFormatter('%H:%M')
-        axes.xaxis.set_major_formatter(formatter)
-
-        axes.fmt_xdata = matplotlib.dates.DateFormatter('%H:%M')
+        axes.fmt_xdata = matplotlib.dates.DateFormatter('%M:%S')
         figure.autofmt_xdate()
 
         return figure

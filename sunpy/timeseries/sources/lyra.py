@@ -57,7 +57,7 @@ class LYRATimeSeries(GenericTimeSeries):
     _source = 'lyra'
 
     @peek_show
-    def peek(self, names=3, **kwargs):
+    def peek(self, names=3, **plot_args):
         """
         Plots the LYRA data. An example is shown below:
 
@@ -72,8 +72,9 @@ class LYRATimeSeries(GenericTimeSeries):
         ----------
         names : `int`, optional
             The number of columns to plot. Defaults to 3.
-        **kwargs : `dict`
-            Any additional plot arguments that should be used when plotting.
+        **plot_args : `dict`
+            Additional plot keyword arguments that are handed to
+            :meth:`pandas.DataFrame.plot`.
         """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()
@@ -84,7 +85,7 @@ class LYRATimeSeries(GenericTimeSeries):
         plt.subplots_adjust(left=0.17, top=0.94, right=0.94, bottom=0.15)
         axes = plt.gca()
 
-        axes = self.data.plot(ax=axes, subplots=True, sharex=True, **kwargs)
+        axes = self.data.plot(ax=axes, subplots=True, sharex=True, **plot_args)
 
         for i, name in enumerate(self.data.columns):
             if names < 3:

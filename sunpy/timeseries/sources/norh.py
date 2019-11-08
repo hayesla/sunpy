@@ -56,7 +56,7 @@ class NoRHTimeSeries(GenericTimeSeries):
         super().__init__(data, header, units, **kwargs)
 
     @peek_show
-    def peek(self):
+    def peek(self, **plot_args):
         """
         Plot the NoRH lightcurve TimeSeries.
 
@@ -66,6 +66,12 @@ class NoRHTimeSeries(GenericTimeSeries):
             import sunpy.timeseries
             norh = sunpy.timeseries.TimeSeries(sunpy.data.sample.NORH_TIMESERIES, source='NoRH')
             norh.peek()
+        
+        Parameters
+        ----------
+        **plot_args : `dict`
+        Additional plot keyword arguments that are handed to
+        :meth:`pandas.DataFrame.plot`.
         """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()
@@ -74,13 +80,13 @@ class NoRHTimeSeries(GenericTimeSeries):
         axes = plt.gca()
         data_lab = str(self.meta.get('OBS-FREQ').values()).replace('[', '').replace(
             ']', '').replace('\'', '')
-        axes.plot(self.data.index, self.data, label=data_lab)
+        self.data.plot(ax=axes, legend=False, **plot_args)
+        axes.legend([data_lab])
         axes.set_yscale("log")
         axes.set_ylim(1e-4, 1)
-        axes.set_title('Nobeyama Radioheliograph')
+        axes.set_title('Nobeyama Radioheliograph Correlation Plot')
         axes.set_xlabel('Start time: ' + self.data.index[0].strftime(TIME_FORMAT))
         axes.set_ylabel('Correlation')
-        axes.legend()
 
         return figure
 

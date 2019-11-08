@@ -52,7 +52,7 @@ class NOAAIndicesTimeSeries(GenericTimeSeries):
     _source = 'noaaindices'
 
     @peek_show
-    def peek(self, type='sunspot SWO'):
+    def peek(self, type='sunspot SWO', **plot_args):
         """
         Plots NOAA Indices as a function of time. An example is shown below.
 
@@ -67,6 +67,9 @@ class NOAAIndicesTimeSeries(GenericTimeSeries):
         ----------
         type : `str`, optional
             The type of plot required. Defaults to "sunspot SWO".
+        **plot_args : `dict`
+            Additional plot keyword arguments that are handed to
+            :meth:`pandas.DataFrame.plot`.
         """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()
@@ -75,23 +78,23 @@ class NOAAIndicesTimeSeries(GenericTimeSeries):
         axes = plt.gca()
 
         if type == 'sunspot SWO':
-            axes = self.data['sunspot SWO'].plot()
+            axes = self.data['sunspot SWO'].plot(**plot_args)
             self.data['sunspot SWO smooth'].plot()
             axes.set_ylabel('Sunspot Number')
         if type == 'sunspot RI':
-            axes = self.data['sunspot RI'].plot()
+            axes = self.data['sunspot RI'].plot(**plot_args)
             self.data['sunspot RI smooth'].plot()
             axes.set_ylabel('Sunspot Number')
         if type == 'sunspot compare':
-            axes = self.data['sunspot RI'].plot()
+            axes = self.data['sunspot RI'].plot(**plot_args)
             self.data['sunspot SWO'].plot()
             axes.set_ylabel('Sunspot Number')
         if type == 'radio':
-            axes = self.data['radio flux'].plot()
+            axes = self.data['radio flux'].plot(**plot_args)
             self.data['radio flux smooth'].plot()
             axes.set_ylabel('Radio Flux [sfu]')
         if type == 'geo':
-            axes = self.data['geomagnetic ap'].plot()
+            axes = self.data['geomagnetic ap'].plot(**plot_args)
             self.data['geomagnetic ap smooth'].plot()
             axes.set_ylabel('Geomagnetic AP Index')
 
@@ -205,7 +208,8 @@ class NOAAPredictIndicesTimeSeries(GenericTimeSeries):
         Parameters
         ----------
         **plot_args : `dict`
-            Any additional plot arguments that should be used when plotting.
+            Additional plot keyword arguments that are handed to
+            :meth:`pandas.DataFrame.plot`.
         """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()
@@ -213,7 +217,7 @@ class NOAAPredictIndicesTimeSeries(GenericTimeSeries):
         figure = plt.figure()
         axes = plt.gca()
 
-        axes = self.data['sunspot'].plot(color='b')
+        axes = self.data['sunspot'].plot(color='b', **plot_args)
         self.data['sunspot low'].plot(linestyle='--', color='b')
         self.data['sunspot high'].plot(linestyle='--', color='b')
 

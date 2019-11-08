@@ -54,7 +54,7 @@ class XRSTimeSeries(GenericTimeSeries):
     _source = 'xrs'
 
     @peek_show
-    def peek(self, title="GOES Xray Flux"):
+    def peek(self, title="GOES X-ray Flux", **plot_args):
         """
         Plots GOES XRS light curve is the usual manner. An example is shown
         below:
@@ -70,8 +70,9 @@ class XRSTimeSeries(GenericTimeSeries):
         ----------
         title : `str`. optional
             The title of the plot. Defaults to "GOES Xray Flux".
-        **kwargs : `dict`
-            Any additional plot arguments that should be used when plotting.
+        **plot_args : `dict`
+            Additional plot keyword arguments that are handed to
+            :meth:`pandas.DataFrame.plot`.
         """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()
@@ -81,11 +82,9 @@ class XRSTimeSeries(GenericTimeSeries):
 
         dates = matplotlib.dates.date2num(parse_time(self.data.index).datetime)
 
-        axes.plot_date(dates, self.data['xrsa'], '-',
-                       label=r'0.5--4.0 $\AA$', color='blue', lw=2)
-        axes.plot_date(dates, self.data['xrsb'], '-',
-                       label=r'1.0--8.0 $\AA$', color='red', lw=2)
+        self.data.plot(ax=axes, legend=False, color=['b','r'], **plot_args)
 
+        axes.legend([r'0.5--4.0 $\AA$', r'1.0--8.0 $\AA$'])
         axes.set_yscale("log")
         axes.set_ylim(1e-9, 1e-2)
         axes.set_title(title)
@@ -100,7 +99,6 @@ class XRSTimeSeries(GenericTimeSeries):
 
         axes.yaxis.grid(True, 'major')
         axes.xaxis.grid(False, 'major')
-        axes.legend()
 
         # TODO: display better tick labels for date range (e.g. 06/01 - 06/05)
         formatter = matplotlib.dates.DateFormatter('%H:%M')
