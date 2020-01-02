@@ -74,7 +74,7 @@ class XRSTimeSeries(GenericTimeSeries):
         **plot_args : `dict`
             Additional plot keyword arguments that are handed to
             :meth:`pandas.DataFrame.plot`.
-        """ 
+        """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()
 
@@ -83,7 +83,7 @@ class XRSTimeSeries(GenericTimeSeries):
 
         dates = matplotlib.dates.date2num(parse_time(self.data.index).datetime)
 
-        self.data.plot(ax=axes, legend=False, color=['b','r'], **plot_args)
+        self.data.plot(ax=axes, legend=False, color=['b', 'r'], **plot_args)
 
         axes.legend([r'0.5--4.0 $\AA$', r'1.0--8.0 $\AA$'])
         axes.set_yscale("log")
