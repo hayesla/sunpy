@@ -14,14 +14,15 @@ from sunpy.map.mapbase import GenericMap, MapMetaValidationError
 from sunpy.map.compositemap import CompositeMap
 from sunpy.map.mapsequence import MapSequence
 
+from sunpy.data import cache
+
 from sunpy.io.file_tools import read_file
 from sunpy.io.header import FileHeader
 
-from sunpy.util.net import download_file
 from sunpy.util import expand_list
 from sunpy.util.metadata import MetaDict
-from sunpy.util.config import get_and_create_download_dir
 from sunpy.util.exceptions import SunpyDeprecationWarning
+from sunpy.util.types import DatabaseEntryType
 
 from sunpy.util.datatype_factory_base import BasicRegistrationFactory
 from sunpy.util.datatype_factory_base import NoMatchError
@@ -38,13 +39,6 @@ except ImportError:
 
 __authors__ = ["Russell Hewett, Stuart Mumford"]
 __email__ = "stuart@mumford.me.uk"
-
-# Make a mock DatabaseEntry class if sqlalchemy is not installed
-try:
-    from sunpy.database.tables import DatabaseEntry
-except ImportError:
-    class DatabaseEntry:
-        pass
 
 __all__ = ['Map', 'MapFactory']
 
@@ -209,22 +203,9 @@ class MapFactory(BasicRegistrationFactory):
                     data_header_pairs.append(pair)
                     i += 1    # an extra increment to account for the data-header pairing
 
-            # File system path (file or directory)
-            elif _is_path(arg):
-                path = pathlib.Path(arg).expanduser()
-                if path.is_file():
-                    pairs = self._read_file(path, **kwargs)
-                    data_header_pairs += pairs
-                elif path.is_dir():
-                    for afile in sorted(path.glob('*')):
-                        data_header_pairs += self._read_file(afile, **kwargs)
-                else:
-                    raise ValueError(f'{path} is neither a file nor a directory')
-
-            # Glob
-            elif isinstance(arg, str) and glob.glob(os.path.expanduser(arg)):
-                for afile in sorted(glob.glob(os.path.expanduser(arg))):
-                    data_header_pairs += self._read_file(afile, **kwargs)
+            # A database Entry
+            elif isinstance(arg, DatabaseEntryType):
+                data_header_pairs += self._read_file(arg.path, **kwargs)
 
             # Already a Map
             elif isinstance(arg, GenericMap):
@@ -233,16 +214,28 @@ class MapFactory(BasicRegistrationFactory):
             # URL
             elif isinstance(arg, str) and _is_url(arg):
                 url = arg
-                path = download_file(url, get_and_create_download_dir())
+                path = str(cache.download(url).absolute())
                 pairs = self._read_file(path, **kwargs)
                 data_header_pairs += pairs
 
-            # A database Entry
-            elif isinstance(arg, DatabaseEntry):
-                data_header_pairs += self._read_file(arg.path, **kwargs)
+            # File system path (file or directory or glob)
+            elif _possibly_a_path(arg):
+                path = pathlib.Path(arg).expanduser()
+                if _is_file(path):
+                    pairs = self._read_file(path, **kwargs)
+                    data_header_pairs += pairs
+                elif _is_dir(path):
+                    for afile in sorted(path.glob('*')):
+                        data_header_pairs += self._read_file(afile, **kwargs)
+                elif glob.glob(os.path.expanduser(arg)):
+                    for afile in sorted(glob.glob(os.path.expanduser(arg))):
+                        data_header_pairs += self._read_file(afile, **kwargs)
+
+                else:
+                    raise ValueError(f'Did not find any files at {arg}')
 
             else:
-                raise ValueError("File not found or invalid input")
+                raise ValueError(f"Invalid input: {arg}")
 
             i += 1
 
@@ -355,13 +348,34 @@ def _is_url(arg):
     return True
 
 
-def _is_path(arg):
+def _possibly_a_path(arg):
+    """
+    Check if arg can be coerced into a Path object.
+    Does *not* check if the path exists.
+    """
     try:
-        is_path = pathlib.Path(arg).expanduser().exists()
+        is_path = pathlib.Path(arg)
+        return True
     except Exception:
         return False
-    else:
-        return is_path
+
+
+# In python<3.8 paths with un-representable chars (ie. '*' on windows)
+# raise an error, so make our own version that returns False instead of
+# erroring. These can be removed when we support python >= 3.8
+# https://docs.python.org/3/library/pathlib.html#methods
+def _is_file(path):
+    try:
+        return path.is_file()
+    except Exception:
+        return False
+
+
+def _is_dir(path):
+    try:
+        return path.is_dir()
+    except Exception:
+        return False
 
 
 class InvalidMapInput(ValueError):

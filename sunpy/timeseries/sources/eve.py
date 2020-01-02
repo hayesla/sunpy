@@ -61,6 +61,14 @@ class ESPTimeSeries(GenericTimeSeries):
 
     @peek_show
     def peek(self, title='EVE/ESP Level1', **kwargs):
+        """
+        Parameters
+        ----------
+        title : `str`, optional
+            Plot title.
+        **kwargs : `dict`
+            Additional plot keyword arguments that are handed to `pandas.DataFrame.plot`.
+        """
 
         self._validate_data_for_plotting()
 
@@ -102,7 +110,8 @@ class ESPTimeSeries(GenericTimeSeries):
         colnames = ['QD', 'CH_18', 'CH_26', 'CH_30', 'CH_36']
 
         all_data = [hdulist[1].data[x] for x in colnames]
-        data = DataFrame(np.array(all_data).T, index=times.isot.astype('datetime64'), columns=colnames)
+        data = DataFrame(np.array(all_data).T, index=times.isot.astype(
+            'datetime64'), columns=colnames)
         data.sort_index(inplace=True)
 
         units = OrderedDict([('QD', u.W/u.m**2),
@@ -151,7 +160,7 @@ class EVESpWxTimeSeries(GenericTimeSeries):
     >>> import sunpy.timeseries
     >>> import sunpy.data.sample  # doctest: +REMOTE_DATA
     >>> eve = sunpy.timeseries.TimeSeries(sunpy.data.sample.EVE_TIMESERIES, source='EVE')  # doctest: +REMOTE_DATA
-    >>> eve = sunpy.timeseries.TimeSeries("http://lasp.colorado.edu/eve/data_access/quicklook/quicklook_data/L0CS/LATEST_EVE_L0CS_DIODES_1m.txt", source='EVE')  # doctest: +REMOTE_DATA
+    >>> eve = sunpy.timeseries.TimeSeries("http://lasp.colorado.edu/eve/data_access/evewebdata/quicklook/L0CS/LATEST_EVE_L0CS_DIODES_1m.txt", source='EVE')  # doctest: +REMOTE_DATA
     >>> eve.peek(subplots=True)  # doctest: +SKIP
 
     References
@@ -180,9 +189,10 @@ class EVESpWxTimeSeries(GenericTimeSeries):
         Parameters
         ----------
         column : `str`, optional
-            The column to display. Defaults to `None`, so it will display all.
+            The column to display. Defaults to ``None``, so it will display all.
         **kwargs : `dict`
-            Any additional plot arguments that should be used when plotting.
+            Additional plot keyword arguments that are handed to
+            :meth:`pandas.DataFrame.plot`.
         """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()

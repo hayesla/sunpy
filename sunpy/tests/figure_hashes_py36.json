@@ -27,6 +27,13 @@
     "sunpy.timeseries.tests.test_timeseriesbase.test_noaa_pre_peek": "265e0fe4831369afb2e9012a5099a0cc2f9b59db97ebe396eb39ccc8c66be248",
     "sunpy.timeseries.tests.test_timeseriesbase.test_norh_peek": "22e7a1d5cbb7e5dea4c886752e6be961b938515030ac936c821ba21177e4a840",
     "sunpy.timeseries.tests.test_timeseriesbase.test_rhessi_peek": "fcd235c9627ad38afd1ca90605bbfed05e5c6fb299c3afcd5dced78de06a061b",
-    "sunpy.visualization.animator.tests.test_basefuncanimator.test_imageanimator_figure": "43febed509078c145da4e2b78f8b1a8d5c90ed89a8ce880e8eaa73e2785b6e29",
-    "sunpy.visualization.animator.tests.test_basefuncanimator.test_lineanimator_figure": "22addc09bcee836322349c6f086b1305b8c1dabf4176fb89afbd70da83dc79c8"
+    "sunpy.visualization.animator.tests.test_basefuncanimator.test_imageanimator_figure": "34d3270476b918f284f21906d46e2160c973179c36b1d67d62bfa6dc51f19362",
+    "sunpy.visualization.animator.tests.test_basefuncanimator.test_lineanimator_figure": "80dd2032071f977fc82230d67832c90d047aa29769c4916bc85259782f084d5d",
+    "sunpy.visualization.animator.tests.test_wcs.test_array_animator_wcs_2d_colorbar_buttons": "4ea4dc1e1dbee8e085c20990a80e67c329ae0cf98e9c790ce9d3965b65e701f0",
+    "sunpy.visualization.animator.tests.test_wcs.test_array_animator_wcs_2d_colorbar_buttons_default_labels": "23f8b75b0644233968c6d9c3f12c43810758eca79b301f672720f9308e8647ec",
+    "sunpy.visualization.animator.tests.test_wcs.test_array_animator_wcs_2d_extra_sliders": "0722e91c2d0a0d02d04d5ba3f81fc94a73f3d9d472bab782591ef58e0287ee78",
+    "sunpy.visualization.animator.tests.test_wcs.test_array_animator_wcs_2d_simple_plot": "dc3cf3d67b36498f7cb08dd8c3ce61d8de8bf68e42dcdc82e4241a8763ce0a89",
+    "sunpy.visualization.animator.tests.test_wcs.test_array_animator_wcs_2d_transpose_update_plot": "bb17568fb1ac207da776955dfea3ebdd2604dca2731b9418ccae35c60846bcd3",
+    "sunpy.visualization.animator.tests.test_wcs.test_array_animator_wcs_2d_update_plot": "ed9dc807de83792827f9cc16c11d7e9e80efddf7bf76fcec13ac1733c5d6ee5c",
+    "sunpy.visualization.animator.tests.test_wcs.test_array_animator_wcs_coord_params": "13fec6d763b2dba49acbfe6f25171d071180ee1dbd4e9e204605bf1de15547eb"
 }

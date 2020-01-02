@@ -28,6 +28,8 @@ else:
 remotedata_spec = importlib.util.find_spec("pytest_remotedata")
 HAVE_REMOTEDATA = remotedata_spec is not None
 
+# Do not collect the sample data file because this would download the sample data.
+collect_ignore = ["data/sample.py"]
 
 def pytest_addoption(parser):
     parser.addoption("--figure_dir", action="store", default="./figure_test_images")
@@ -55,6 +57,37 @@ def tmp_config_dir(request):
     del os.environ["SUNPY_CONFIGDIR"]
     astropy.config.paths.set_temp_config._temp_path = None
     astropy.config.paths.set_temp_cache._temp_path = None
+
+
+@pytest.fixture()
+def sunpy_cache(mocker, tmp_path):
+    """
+    Provide a way to add local files to the cache. This can be useful when mocking
+    remote requests.
+    """
+    from types import MethodType
+    from sunpy.data.data_manager.cache import Cache
+    from sunpy.data.data_manager.storage import InMemStorage
+    from sunpy.data.data_manager.downloader import ParfiveDownloader
+    cache = Cache(
+        ParfiveDownloader(),
+        InMemStorage(),
+        tmp_path,
+        None
+    )
+
+    def add(self, url, path):
+        self._storage.store({
+            'url': url,
+            'file_path': path,
+            'file_hash': 'none',  # hash doesn't matter
+        })
+    cache.add = MethodType(add, cache)
+
+    def func(mocked):
+        mocker.patch(mocked, cache)
+        return cache
+    yield func
 
 
 @pytest.fixture()
@@ -101,7 +134,6 @@ def pytest_runtest_setup(item):
 
 
 def pytest_unconfigure(config):
-
     # If at least one figure test has been run, print result image directory
     if len(new_hash_library) > 0:
         # Write the new hash library in JSON

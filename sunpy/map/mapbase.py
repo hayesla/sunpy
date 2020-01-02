@@ -8,7 +8,7 @@ import textwrap
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import patches, cm, colors
+from matplotlib import cm
 
 import astropy.wcs
 import astropy.units as u
@@ -25,7 +25,6 @@ from sunpy.visualization import wcsaxes_compat, axis_labels_from_ctype, peek_sho
 from sunpy.sun import constants
 from sunpy.coordinates import sun
 from sunpy.time import parse_time, is_time
-from sunpy.image.transform import affine_transform
 from sunpy.image.resample import reshape_image_to_4d_superpixel
 from sunpy.image.resample import resample as sunpy_image_resample
 from sunpy.coordinates import get_earth
@@ -199,6 +198,8 @@ class GenericMap(NDData):
         if self.dtype == np.uint8:
             norm = None
         else:
+            # Put import here to reduce sunpy.map import time
+            from matplotlib import colors
             norm = colors.Normalize()
 
         # Visualization attributes
@@ -228,7 +229,7 @@ class GenericMap(NDData):
                    Observation Date:\t {date}
                    Exposure Time:\t\t {dt:f}
                    Dimension:\t\t {dim}
-                   Coordinate System:\t {coord.name}
+                   Coordinate System:\t {coord}
                    Scale:\t\t\t {scale}
                    Reference Pixel:\t {refpix}
                    Reference Coord:\t {refcoord}
@@ -238,7 +239,7 @@ class GenericMap(NDData):
                                dt=self.exposure_time,
                                dim=u.Quantity(self.dimensions),
                                scale=u.Quantity(self.scale),
-                               coord=self.coordinate_frame,
+                               coord=self._coordinate_frame_name,
                                refpix=u.Quantity(self.reference_pixel),
                                refcoord=u.Quantity((self.reference_coordinate.data.lon,
                                                     self.reference_coordinate.data.lat)),
@@ -265,7 +266,24 @@ class GenericMap(NDData):
         """
         The `~astropy.wcs.WCS` property of the map.
         """
-        w2 = astropy.wcs.WCS(naxis=2)
+        # Construct the WCS based on the FITS header, but don't "do_set" which
+        # analyses the FITS header for correctness.
+        with warnings.catch_warnings():
+            # Ignore warnings we may raise when constructing the fits header about dropped keys.
+            warnings.simplefilter("ignore", SunpyUserWarning)
+            w2 = astropy.wcs.WCS(header=self.fits_header, _do_set=False)
+
+        # If the FITS header is > 2D pick the first 2 and move on.
+        # This will require the FITS header to be valid.
+        if w2.naxis > 2:
+            # We have to change this or else the WCS doesn't parse properly, even
+            # though we don't care about the third dimension. This applies to both
+            # EIT and IRIS data, it is here to reduce the chances of silly errors.
+            if self.meta.get('cdelt3', None) == 0:
+                w2.wcs.cdelt[2] = 1e-10
+
+            w2 = w2.sub([1, 2])
+
         w2.wcs.crpix = u.Quantity(self.reference_pixel)
         # Make these a quantity array to prevent the numpy setting element of
         # array with sequence error.
@@ -294,15 +312,28 @@ class GenericMap(NDData):
         if {'HPLN', 'HPLT'} <= ctypes or {'SOLX', 'SOLY'} <= ctypes:
             w2.heliographic_observer = self.observer_coordinate
 
+        # Validate the WCS here.
+        w2.wcs.set()
         return w2
 
     @property
     def coordinate_frame(self):
         """
         An `astropy.coordinates.BaseFrame` instance created from the coordinate
-        information for this Map.
+        information for this Map, or None if the frame cannot be determined.
         """
-        return astropy.wcs.utils.wcs_to_celestial_frame(self.wcs)
+        try:
+            return astropy.wcs.utils.wcs_to_celestial_frame(self.wcs)
+        except ValueError as e:
+            warnings.warn(f'Could not determine coordinate frame from map metadata',
+                          SunpyUserWarning)
+            return None
+
+    @property
+    def _coordinate_frame_name(self):
+        if self.coordinate_frame is None:
+            return 'Unknown'
+        return self.coordinate_frame.name
 
     def _as_mpl_axes(self):
         """
@@ -610,27 +641,27 @@ class GenericMap(NDData):
 
     @property
     def heliographic_latitude(self):
-        """Heliographic latitude."""
+        """Observer heliographic latitude."""
         return self.observer_coordinate.lat
 
     @property
     def heliographic_longitude(self):
-        """Heliographic longitude."""
+        """Observer heliographic longitude."""
         return self.observer_coordinate.lon
 
     @property
     def carrington_latitude(self):
-        """Carrington latitude."""
+        """Observer Carrington latitude."""
         return self.observer_coordinate.heliographic_carrington.lat
 
     @property
     def carrington_longitude(self):
-        """Carrington longitude."""
+        """Observer Carrington longitude."""
         return self.observer_coordinate.heliographic_carrington.lon
 
     @property
     def dsun(self):
-        """The observer distance from the center of the Sun."""
+        """Observer distance from the center of the Sun."""
         return self.observer_coordinate.radius.to('m')
 
     @property
@@ -888,6 +919,9 @@ class GenericMap(NDData):
         hdu_type: None, `~fits.CompImageHDU`
             `None` will return a normal FITS file.
             `~fits.CompImageHDU` will rice compress the FITS file.
+        kwargs :
+            Any additional keyword arguments are passed to
+            `~sunpy.io.write_file`.
         """
         io.write_file(filepath, self.data, self.meta, filetype=filetype,
                       **kwargs)
@@ -962,7 +996,8 @@ class GenericMap(NDData):
         new_map = self._new_instance(new_data, new_meta, self.plot_settings)
         return new_map
 
-    def rotate(self, angle=None, rmatrix=None, order=4, scale=1.0,
+    @u.quantity_input
+    def rotate(self, angle: u.deg = None, rmatrix=None, order=4, scale=1.0,
                recenter=False, missing=0.0, use_scipy=False):
         """
         Returns a new rotated and rescaled map.
@@ -1026,36 +1061,16 @@ class GenericMap(NDData):
         transformations, situations when the underlying data is modified prior
         to rotation, and differences from IDL's rot().
         """
+        # Put the import here to reduce sunpy.map import time
+        from sunpy.image.transform import affine_transform
+
         if angle is not None and rmatrix is not None:
-            raise ValueError("You cannot specify both an angle and a matrix")
+            raise ValueError("You cannot specify both an angle and a rotation matrix.")
         elif angle is None and rmatrix is None:
             rmatrix = self.rotation_matrix
 
-        # This is out of the quantity_input decorator. To allow the angle=None
-        # case. See https://github.com/astropy/astropy/issues/3734
-        if angle:
-            try:
-                equivalent = angle.unit.is_equivalent(u.deg)
-
-                if not equivalent:
-                    raise u.UnitsError("Argument '{}' to function '{}'"
-                                       " must be in units convertable to"
-                                       " '{}'.".format('angle', 'rotate',
-                                                        u.deg.to_string()))
-
-            # Either there is no .unit or no .is_equivalent
-            except AttributeError:
-                if hasattr(angle, "unit"):
-                    error_msg = "a 'unit' attribute without an 'is_equivalent' method"
-                else:
-                    error_msg = "no 'unit' attribute"
-                raise TypeError("Argument '{}' to function '{}' has {}. "
-                                "You may want to pass in an astropy Quantity instead."
-                                .format('angle', 'rotate', error_msg))
-
-        # Interpolation parameter sanity
         if order not in range(6):
-            raise ValueError("Order must be between 0 and 5")
+            raise ValueError("Order must be between 0 and 5.")
 
         # The FITS-WCS transform is by definition defined around the
         # reference coordinate in the header.
@@ -1485,6 +1500,8 @@ class GenericMap(NDData):
         -----
         Keyword arguments are passed onto `matplotlib.patches.Circle`.
         """
+        # Put import here to reduce sunpy.map import time
+        from matplotlib import patches
 
         if not axes:
             axes = wcsaxes_compat.gca_wcs(self.wcs)

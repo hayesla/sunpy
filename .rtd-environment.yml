@@ -30,7 +30,10 @@ dependencies:
   - sphinx-astropy
   - sphinx-gallery
   - towncrier
+  - graphviz!=2.42.*
   - pip:
     - sunpy-sphinx-theme
     - jplephem
     - astroquery
+    - reproject
+    - semantic-version==2.6.0

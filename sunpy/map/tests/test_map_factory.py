@@ -26,9 +26,9 @@ AIA_171_IMAGE = os.path.join(filepath, 'aia_171_level1.fits')
 RHESSI_IMAGE = os.path.join(filepath, 'hsi_image_20101016_191218.fits')
 
 
-#==============================================================================
+# ==============================================================================
 # Map Factory Tests
-#==============================================================================
+# ==============================================================================
 class TestMap:
     def test_mapsequence(self):
         # Test making a MapSequence
@@ -131,6 +131,27 @@ class TestMap:
         pair_map = sunpy.map.Map(data, header)
         assert isinstance(pair_map, sunpy.map.GenericMap)
 
+        # Common keys not strings
+        data = np.arange(0, 100).reshape(10, 10)
+        header = {'cdelt1': 10, 'cdelt2': 10,
+                  'telescop': 100,
+                  'detector': 1,
+                  'instrume': 50,
+                  'cunit1': 'arcsec', 'cunit2': 'arcsec'}
+        pair_map = sunpy.map.Map(data, header)
+        assert isinstance(pair_map, sunpy.map.GenericMap)
+
+    def test_errors(self):
+        # If directory doesn't exist, make sure it's listed in the error msg
+        nonexist_dir = 'nonexist'
+        directory = pathlib.Path(filepath, nonexist_dir)
+        with pytest.raises(ValueError, match=nonexist_dir):
+            maps = sunpy.map.Map(os.fspath(directory))
+
+        with pytest.raises(ValueError, match='Invalid input: 78'):
+            # Check a random unsupported type (int) fails
+            sunpy.map.Map(78)
+
     # requires dask array to run properly
     def test_dask_array(self):
         dask_array = pytest.importorskip('dask.array')
@@ -163,9 +184,9 @@ class TestMap:
         backin = sunpy.map.Map(afilename)
         assert isinstance(backin, sunpy.map.sources.EITMap)
 
-#==============================================================================
+# ==============================================================================
 # Sources Tests
-#==============================================================================
+# ==============================================================================
     def test_sdo(self):
         # Test an AIAMap
         aia = sunpy.map.Map(AIA_171_IMAGE)

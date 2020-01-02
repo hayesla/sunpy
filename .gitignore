@@ -4,6 +4,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+tmp/
 
 # C extensions
 *.so
@@ -220,4 +221,7 @@ tags
 
 # Release script
 .github_cache
+
+# Misc Stuff
 .history
+*.orig

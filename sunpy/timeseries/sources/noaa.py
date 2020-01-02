@@ -65,7 +65,7 @@ class NOAAIndicesTimeSeries(GenericTimeSeries):
 
         Parameters
         ----------
-        type : `str`, optional
+        type : {'sunspot SWO', 'sunspot RI', 'sunspot compare', 'radio', 'geo'}, optional
             The type of plot required. Defaults to "sunspot SWO".
         **plot_args : `dict`
             Additional plot keyword arguments that are handed to
@@ -81,22 +81,25 @@ class NOAAIndicesTimeSeries(GenericTimeSeries):
             axes = self.data['sunspot SWO'].plot(**plot_args)
             self.data['sunspot SWO smooth'].plot()
             axes.set_ylabel('Sunspot Number')
-        if type == 'sunspot RI':
+
+        elif type == 'sunspot RI':
             axes = self.data['sunspot RI'].plot(**plot_args)
             self.data['sunspot RI smooth'].plot()
             axes.set_ylabel('Sunspot Number')
-        if type == 'sunspot compare':
+        elif type == 'sunspot compare':
             axes = self.data['sunspot RI'].plot(**plot_args)
             self.data['sunspot SWO'].plot()
             axes.set_ylabel('Sunspot Number')
-        if type == 'radio':
+        elif type == 'radio':
             axes = self.data['radio flux'].plot(**plot_args)
             self.data['radio flux smooth'].plot()
             axes.set_ylabel('Radio Flux [sfu]')
-        if type == 'geo':
+        elif type == 'geo':
             axes = self.data['geomagnetic ap'].plot(**plot_args)
             self.data['geomagnetic ap smooth'].plot()
             axes.set_ylabel('Geomagnetic AP Index')
+        else:
+            raise ValueError(f'Got unknown plot type "{type}"')
 
         axes.set_ylim(0)
         axes.set_title('Solar Cycle Progression')
@@ -210,6 +213,7 @@ class NOAAPredictIndicesTimeSeries(GenericTimeSeries):
         **plot_args : `dict`
             Additional plot keyword arguments that are handed to
             :meth:`pandas.DataFrame.plot`.
+
         """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()
@@ -231,7 +235,6 @@ class NOAAPredictIndicesTimeSeries(GenericTimeSeries):
         axes.legend()
 
         return figure
-
 
     @staticmethod
     def _parse_file(filepath):

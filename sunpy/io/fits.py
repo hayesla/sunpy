@@ -160,6 +160,9 @@ def write(fname, data, header, hdu_type=None, **kwargs):
     hdu_type: `None` or `~astropy.io.fits.CompImageHDU`
         `None` will return a normal FITS files.
         `~astropy.io.fits.CompImageHDU` will rice compress the FITS file.
+    kwargs :
+        Additional keyword arguments are given to
+        `~astropy.io.fits.HDUList.writeto`.
     """
     # Copy header so the one in memory is left alone while changing it for
     # write.
@@ -197,19 +200,26 @@ def header_to_fits(header):
     key_comments = header.pop('KEYCOMMENTS', False)
 
     for k, v in header.items():
-        if isinstance(v, fits.header._HeaderCommentaryCards):
-            if k.upper() == 'COMMENT':
-                comments = str(v).split('\n')
-                for com in comments:
-                    fits_header.add_comment(com)
-            elif k.upper() == 'HISTORY':
-                hists = str(v).split('\n')
-                for hist in hists:
-                    fits_header.add_history(hist)
-            elif k != '':
+        # Drop any keys which are too long to save into FITS
+        if len(k) > 8:
+            warnings.warn(f"The meta key {k} is too long, dropping from the FITS header.", SunpyUserWarning)
+            continue
+        if k.upper() in ('COMMENT', 'HV_COMMENT'):
+            comments = str(v).split('\n')
+            for com in comments:
+                fits_header.add_comment(com)
+        elif k.upper() == 'HISTORY':
+            hists = str(v).split('\n')
+            for hist in hists:
+                fits_header.add_history(hist)
+        elif isinstance(v, fits.header._HeaderCommentaryCards):
+            if k != '':
                 fits_header.append(fits.Card(k, str(v).split('\n')))
-
         else:
+            # For some horrific reason, we save a list to the wavelnth key in
+            # sources/rhessi.py. This is the least invasive fix for that stupidity.
+            if isinstance(v, list):
+                v = str(v)
             fits_header.append(fits.Card(k, v))
 
     if isinstance(key_comments, dict):
