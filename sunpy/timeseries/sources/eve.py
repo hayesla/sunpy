@@ -60,14 +60,15 @@ class ESPTimeSeries(GenericTimeSeries):
     _source = 'esp'
 
     @peek_show
-    def peek(self, title='EVE/ESP Level1', **kwargs):
+    def peek(self, title='EVE/ESP Level1', **plot_args):
         """
         Parameters
         ----------
         title : `str`, optional
             Plot title.
-        **kwargs : `dict`
-            Additional plot keyword arguments that are handed to `pandas.DataFrame.plot`.
+        **plot_args : `dict`
+            Additional plot keyword arguments that are handed to
+            :meth:`pandas.DataFrame.plot`.
         """
 
         self._validate_data_for_plotting()
@@ -76,7 +77,7 @@ class ESPTimeSeries(GenericTimeSeries):
 
         figure = plt.figure()
         axes = plt.gca()
-        axes = self.data.plot(ax=axes, subplots=True, sharex=True, **kwargs)
+        axes = self.data.plot(ax=axes, subplots=True, sharex=True, **plot_args)
         plt.xlim(self.data.index[0], self.data.index[-1])
 
         axes[0].set_title(title)
@@ -175,7 +176,7 @@ class EVESpWxTimeSeries(GenericTimeSeries):
     _source = 'eve'
 
     @peek_show
-    def peek(self, column=None, **kwargs):
+    def peek(self, column=None, **plot_args):
         """
         Plots the time series in a new figure. An example is shown below:
 
@@ -190,7 +191,7 @@ class EVESpWxTimeSeries(GenericTimeSeries):
         ----------
         column : `str`, optional
             The column to display. Defaults to ``None``, so it will display all.
-        **kwargs : `dict`
+        **plot_args : `dict`
             Additional plot keyword arguments that are handed to
             :meth:`pandas.DataFrame.plot`.
         """
@@ -210,12 +211,12 @@ class EVESpWxTimeSeries(GenericTimeSeries):
                     kwargs['title'] = 'EVE Averages'
 
         if column is None:
-            self.plot(**kwargs)
+            self.plot(**plot_args)
         else:
             data = self.data[column]
             if "title" not in kwargs:
                 kwargs['title'] = 'EVE ' + column.replace('_', ' ')
-            data.plot(**kwargs)
+            data.plot(**plot_args)
 
         return figure
 

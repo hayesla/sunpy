@@ -81,7 +81,6 @@ class NOAAIndicesTimeSeries(GenericTimeSeries):
             axes = self.data['sunspot SWO'].plot(**plot_args)
             self.data['sunspot SWO smooth'].plot()
             axes.set_ylabel('Sunspot Number')
-
         elif type == 'sunspot RI':
             axes = self.data['sunspot RI'].plot(**plot_args)
             self.data['sunspot RI smooth'].plot()
