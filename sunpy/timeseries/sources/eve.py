@@ -200,22 +200,22 @@ class EVESpWxTimeSeries(GenericTimeSeries):
 
         figure = plt.figure()
         # Choose title if none was specified
-        if "title" not in kwargs and column is None:
+        if "title" not in plot_args and column is None:
             if len(self.data.columns) > 1:
-                kwargs['title'] = 'EVE (1 minute data)'
+                plot_args['title'] = 'EVE (1 minute data)'
             else:
                 if self._filename is not None:
                     base = self._filename.replace('_', ' ')
-                    kwargs['title'] = os.path.splitext(base)[0]
+                    plot_args['title'] = os.path.splitext(base)[0]
                 else:
-                    kwargs['title'] = 'EVE Averages'
+                    plot_args['title'] = 'EVE Averages'
 
         if column is None:
             self.plot(**plot_args)
         else:
             data = self.data[column]
-            if "title" not in kwargs:
-                kwargs['title'] = 'EVE ' + column.replace('_', ' ')
+            if "title" not in plot_args:
+                plot_args['title'] = 'EVE ' + column.replace('_', ' ')
             data.plot(**plot_args)
 
         return figure

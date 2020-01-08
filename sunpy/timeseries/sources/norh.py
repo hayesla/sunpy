@@ -70,8 +70,8 @@ class NoRHTimeSeries(GenericTimeSeries):
         Parameters
         ----------
         **plot_args : `dict`
-        Additional plot keyword arguments that are handed to
-        :meth:`pandas.DataFrame.plot`.
+            Additional plot keyword arguments that are handed to
+            :meth:`pandas.DataFrame.plot`.
         """
         # Check we have a timeseries valid for plotting
         self._validate_data_for_plotting()
