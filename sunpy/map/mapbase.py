@@ -229,7 +229,7 @@ class GenericMap(MapDeprecateMixin, MapMetaMixin, NDCube):
         # TODO: This should be a function of the header, not of the map
         self._validate_meta()
 
-        if self.dtype == np.uint8:
+        if self.data.dtype == np.uint8:
             norm = None
         else:
             # Put import here to reduce sunpy.map import time
@@ -304,7 +304,7 @@ class GenericMap(MapDeprecateMixin, MapMetaMixin, NDCube):
                                meas=measurement, wave=wave,
                                date=self.date.strftime(TIME_FORMAT),
                                dt=dt,
-                               dim=u.Quantity(self.dimensions),
+                               dim=u.Quantity(self.shape),
                                scale=u.Quantity(self.scale),
                                coord=self._coordinate_frame_name,
                                refpix=u.Quantity(self.reference_pixel),
