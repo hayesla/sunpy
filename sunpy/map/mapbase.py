@@ -51,7 +51,7 @@ from sunpy.util.functools import seconddispatch
 from sunpy.util.util import _figure_to_base64, fix_duplicate_notes
 from sunpy.visualization import axis_labels_from_ctype, peek_show, wcsaxes_compat
 from sunpy.visualization.colormaps import cm as sunpy_cm
-from .mixins.mapmeta import MapMetaMixin, MapMetaValidationError, PixelPair
+from .mixins.mapmeta import MapDeprecateMixin, MapMetaMixin, MapMetaValidationError, PixelPair
 
 TIME_FORMAT = config.get("general", "time_format")
 _NUMPY_COPY_IF_NEEDED = False if np.__version__.startswith("1.") else None
@@ -99,7 +99,7 @@ to the standard PC_ij described in section 6.1 of .
 __all__ = ['GenericMap', 'MapMetaValidationError', 'PixelPair']
 
 
-class GenericMap(MapMetaMixin, NDCube):
+class GenericMap(MapDeprecateMixin, MapMetaMixin, NDCube):
     """
     A Generic spatially-aware 2D data array
 
@@ -616,51 +616,6 @@ class GenericMap(MapMetaMixin, NDCube):
         # This code is reused from Astropy
         return WCSAxes, {'wcs': self.wcs}
 
-    # Some numpy extraction
-    @property
-    def dimensions(self):
-        """
-        The dimensions of the array (x axis first, y axis second).
-        """
-        return PixelPair(*u.Quantity(np.flipud(self.data.shape), 'pixel'))
-
-    @property
-    def dtype(self):
-        """
-        The `numpy.dtype` of the array of the map.
-        """
-        return self.data.dtype
-
-    @property
-    def ndim(self):
-        """
-        The value of `numpy.ndarray.ndim` of the data array of the map.
-        """
-        return self.data.ndim
-
-    def std(self, *args, **kwargs):
-        """
-        Calculate the standard deviation of the data array, ignoring NaNs.
-        """
-        return np.nanstd(self.data, *args, **kwargs)
-
-    def mean(self, *args, **kwargs):
-        """
-        Calculate the mean of the data array, ignoring NaNs.
-        """
-        return np.nanmean(self.data, *args, **kwargs)
-
-    def min(self, *args, **kwargs):
-        """
-        Calculate the minimum value of the data array, ignoring NaNs.
-        """
-        return np.nanmin(self.data, *args, **kwargs)
-
-    def max(self, *args, **kwargs):
-        """
-        Calculate the maximum value of the data array, ignoring NaNs.
-        """
-        return np.nanmax(self.data, *args, **kwargs)
 
     @u.quantity_input
     def shift_reference_coord(self, axis1: u.deg, axis2: u.deg):
