@@ -243,7 +243,7 @@ class GenericMap(MapDeprecateMixin, MapMetaMixin, NDCube):
             'interpolation': 'nearest',
             'origin': 'lower'
         }
-        if self.dtype != np.uint8:
+        if self.data.dtype != np.uint8:
             # Put import here to reduce sunpy.map import time
             from matplotlib import colors
             self.plot_settings['norm'] = colors.Normalize()
