@@ -45,6 +45,7 @@ project = 'sunpy'
 author = 'The SunPy Community'
 copyright = f'{datetime.datetime.now().year}, {author}'
 
+<<<<<<<
 # Register remote data option with doctest
 import doctest
 
@@ -57,6 +58,30 @@ release = __version__
 sunpy_version = Version(__version__)
 is_release = not(sunpy_version.is_prerelease or sunpy_version.is_devrelease)
 
+=======
+import datetime
+
+from packaging.version import Version
+
+# -- Project information -----------------------------------------------------
+
+# The full version, including alpha/beta/rc tags
+from sunpy import __version__
+
+_version = Version(__version__)
+version = release = str(_version)
+# Avoid "post" appearing in version string in rendered docs
+if _version.is_postrelease:
+    version = release = _version.base_version
+# Avoid long githashes in rendered Sphinx docs
+elif _version.is_devrelease:
+    version = release = f"{_version.base_version}.dev{_version.dev}"
+is_development = _version.is_devrelease
+is_release = not(_version.is_prerelease or _version.is_devrelease)
+
+project = "sunpy"
+author = "The SunPy Community"
+>>>>>>>
 # We want to make sure all the following warnings fail the build
 warnings.filterwarnings("error", category=SunpyDeprecationWarning)
 warnings.filterwarnings("error", category=SunpyPendingDeprecationWarning)
@@ -173,9 +198,16 @@ for line in open('nitpick-exceptions'):
     if line.strip() == "" or line.startswith("#"):
         continue
     dtype, target = line.split(None, 1)
+<<<<<<<
     target = target.strip()
     nitpick_ignore.append((dtype, target))
 
+=======
+master_doc = "index"
+
+# Treat everything in single ` as a Python reference.
+default_role = "py:obj"
+>>>>>>>
 
 # -- Options for intersphinx extension ---------------------------------------
 
