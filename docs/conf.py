@@ -48,14 +48,33 @@ copyright = f'{datetime.datetime.now().year}, {author}'
 # Register remote data option with doctest
 import doctest
 
+<<<<<<<
 REMOTE_DATA = doctest.register_optionflag('REMOTE_DATA')
+=======
+from packaging.version import Version
+
+# -- Project information -----------------------------------------------------
+>>>>>>>
 
 # The full version, including alpha/beta/rc tags
 from sunpy import __version__
 
+<<<<<<<
 release = __version__
 sunpy_version = Version(__version__)
 is_release = not(sunpy_version.is_prerelease or sunpy_version.is_devrelease)
+=======
+_version = Version(__version__)
+version = release = str(_version)
+# Avoid "post" appearing in version string in rendered docs
+if _version.is_postrelease:
+    version = release = _version.base_version
+# Avoid long githashes in rendered Sphinx docs
+elif _version.is_devrelease:
+    version = release = f"{_version.base_version}.dev{_version.dev}"
+is_development = _version.is_devrelease
+is_release = not(_version.is_prerelease or _version.is_devrelease)
+>>>>>>>
 
 # We want to make sure all the following warnings fail the build
 warnings.filterwarnings("error", category=SunpyDeprecationWarning)
@@ -129,7 +148,7 @@ extensions = [
 automodapi_toctreedirnm = "generated/api"
 
 # Add any paths that contain templates here, relative to this directory.
-# templates_path = ["_templates"]
+# templates_path = ["_templates"]  # NOQA: ERA001
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -176,6 +195,11 @@ for line in open('nitpick-exceptions'):
     target = target.strip()
     nitpick_ignore.append((dtype, target))
 
+<<<<<<<
+=======
+# Treat everything in single ` as a Python reference.
+default_role = "py:obj"
+>>>>>>>
 
 # -- Options for intersphinx extension ---------------------------------------
 
@@ -250,10 +274,22 @@ hoverxref_role_types = {
 # a list of builtin themes.
 html_theme = "sunpy"
 
+# Render inheritance diagrams in SVG
+graphviz_output_format = "svg"
+
+graphviz_dot_args = [
+    "-Nfontsize=10",
+    "-Nfontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+    "-Efontsize=10",
+    "-Efontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+    "-Gfontsize=10",
+    "-Gfontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+]
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ["_static"]
+# html_static_path = ["_static"]  # NOQA: ERA001
 
 # Render inheritance diagrams in SVG
 graphviz_output_format = "svg"
