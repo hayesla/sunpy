@@ -39,7 +39,7 @@ class GBMSummaryTimeSeries(GenericTimeSeries):
     counts in an 14.5--15.6 keV original channel would all be accumulated into the
     15--25 keV rebinned channel.
 
-    * 4-15 keV
+    * 8-15 keV
     * 15-25 keV
     * 25-50 keV
     * 50-100 keV
@@ -157,7 +157,7 @@ class GBMSummaryTimeSeries(GenericTimeSeries):
         count_data = hdulist[2].data
 
         # rebin the 128 energy channels into some summary ranges
-        # 4-15 keV, 15 - 25 keV, 25-50 keV, 50-100 keV, 100-300 keV, 300-800 keV, 800 - 2000 keV
+        # 8-15 keV, 15 - 25 keV, 25-50 keV, 50-100 keV, 100-300 keV, 300-800 keV, 800 - 2000 keV
         # put the data in the units of counts/s/keV
         summary_counts = _bin_data_for_summary(energy_bins, count_data)
 
@@ -167,11 +167,11 @@ class GBMSummaryTimeSeries(GenericTimeSeries):
         gbm_times.precision = 9
         gbm_times = gbm_times.isot.astype('datetime64')
 
-        column_labels = ['4-15 keV', '15-25 keV', '25-50 keV', '50-100 keV',
+        column_labels = ['8-15 keV', '15-25 keV', '25-50 keV', '50-100 keV',
                          '100-300 keV', '300-800 keV', '800-2000 keV']
 
         # Add the units data
-        units = OrderedDict([('4-15 keV', u.ct / u.s / u.keV), ('15-25 keV', u.ct / u.s / u.keV),
+        units = OrderedDict([('8-15 keV', u.ct / u.s / u.keV), ('15-25 keV', u.ct / u.s / u.keV),
                              ('25-50 keV', u.ct / u.s / u.keV), ('50-100 keV', u.ct / u.s / u.keV),
                              ('100-300 keV', u.ct / u.s / u.keV), ('300-800 keV', u.ct / u.s / u.keV),
                              ('800-2000 keV', u.ct / u.s / u.keV)])
@@ -198,7 +198,7 @@ def _bin_data_for_summary(energy_bins, count_data):
     the units of counts/s/keV.
 
     Bin ranges used:
-    * 4-15 keV
+    * 8-15 keV
     * 15-25 keV
     * 25-50 keV
     * 50-100 keV
@@ -215,7 +215,7 @@ def _bin_data_for_summary(energy_bins, count_data):
     """
 
     # list of energy bands to sum between
-    ebands = [4, 15, 25, 50, 100, 300, 800, 2000]
+    ebands = [8, 15, 25, 50, 100, 300, 800, 2000]
     e_center = (energy_bins['e_min'] + energy_bins['e_max']) / 2
     indices = [np.searchsorted(e_center, e) for e in ebands]
 
